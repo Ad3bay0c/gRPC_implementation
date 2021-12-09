@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/Ad3bay0c/gRPC/greet/greetpb"
 	"google.golang.org/grpc"
 	"log"
@@ -9,6 +10,15 @@ import (
 )
 
 type server struct {}
+
+func (s *server) Greet(ctx context.Context, req *greetpb.GreetRequest) (*greetpb.GreetResponse, error) {
+	firstName := req.GetGreeting().GetFirstName()
+	result := "Hello " + firstName
+	res := &greetpb.GreetResponse{
+		Result: result,
+	}
+	return res, nil
+}
 func main() {
 
 	port := os.Getenv("PORT")
