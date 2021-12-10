@@ -26,7 +26,10 @@ func main() {
 	//doServerStreaming(c)
 
 	// Client Streaming RPC Implementation
-	doClientStreaming(c)
+	//doClientStreaming(c)
+
+	// Bi-directional Streaming RPC Implementation
+	doBiDirectionalStreaming(c)
 }
 
 func doUnary(c greetpb.GreetServiceClient) {
@@ -134,4 +137,71 @@ func doClientStreaming(c greetpb.GreetServiceClient) {
         log.Fatalf("Error while receiving response from LongGreet: %v", err.Error())
     }
 	fmt.Printf("LongGreet Response: %v\n", res)
+}
+
+func doBiDirectionalStreaming(c greetpb.GreetServiceClient) {
+	requests := []*greetpb.GreetEveryoneRequest{
+		{
+			Greeting: &greetpb.Greeting{
+				FirstName: "John",
+				LastName:  "Doe",
+			},
+				},
+		{
+			Greeting: &greetpb.Greeting{
+				FirstName: "Jane",
+				LastName:  "Doe",
+			},
+				},
+		{
+			Greeting: &greetpb.Greeting{
+				FirstName: "Jack",
+				LastName:  "Doe",
+			},
+				},
+		{
+			Greeting: &greetpb.Greeting{
+				FirstName: "Jill",
+				LastName:  "Doe",
+			},
+				},
+		{
+			Greeting: &greetpb.Greeting{
+				FirstName: "John",
+				LastName:  "Smith",
+			},
+				},
+	}
+	// We create a stream by invoking the client
+	stream, err := c.GreetEveryone(context.Background())
+	if err != nil {
+		log.Fatalf("Error while creating stream: %v", err.Error())
+	}
+	waitc := make(chan struct{})
+	// We send a bunch of messages to the client (goroutine)
+	go func() {
+		for _, req := range requests {
+			fmt.Printf("Sending message: %v\n", req)
+            stream.Send(req)
+            time.Sleep(1000 * time.Millisecond)
+        }
+		stream.CloseSend()
+	}()
+	// We receive a bunch of messages from the client (goroutine)
+	go func() {
+		for {
+			res, err := stream.Recv()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				log.Printf("Error while receiving: %v", err.Error())
+				break
+			}
+			log.Printf("Received: %v", res.GetResult())
+		}
+		close(waitc)
+	}()
+	// block until everything is done
+	<-waitc
 }
