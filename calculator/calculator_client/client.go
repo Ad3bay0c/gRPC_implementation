@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Ad3bay0c/gRPC/calculator/calculatorpb"
 	"google.golang.org/grpc"
+	"io"
 	"log"
 )
 
@@ -14,7 +15,12 @@ func main() {
 	}
 	defer conn.Close()
 	c := calculatorpb.NewCalculatorServiceClient(conn)
-	doUnary(c)
+	// unary
+	//doUnary(c)
+
+	//streaming
+	doServerStreaming(c)
+
 }
 
 func doUnary(c calculatorpb.CalculatorServiceClient) {
@@ -29,3 +35,22 @@ func doUnary(c calculatorpb.CalculatorServiceClient) {
     log.Printf("Response from Sum: %v", res.SumResult)
 }
 
+func doServerStreaming(c calculatorpb.CalculatorServiceClient) {
+	req := calculatorpb.PrimeNumberDecompositionRequest{
+		Number: 120,
+	}
+	res, err := c.PrimeNumber(context.Background(), &req)
+	if err != nil {
+		log.Fatalf("Error occurred: %v", err)
+	}
+	for {
+		msg, err := res.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatalf("An Error Occurred: %v", err)
+		}
+		log.Printf("Factor is: %v", msg.PrimeNumber)
+	}
+}
