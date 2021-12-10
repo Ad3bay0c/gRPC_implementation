@@ -8,6 +8,8 @@ import (
 	"log"
 	"net"
 	"os"
+	"strconv"
+	"time"
 )
 
 type server struct {}
@@ -20,6 +22,23 @@ func (s *server) Greet(ctx context.Context, req *greetpb.GreetRequest) (*greetpb
 		Result: result,
 	}
 	return res, nil
+}
+
+func (s *server) GreetManyTimes(req *greetpb.GreetManyTimesRequest, stream greetpb.GreetService_GreetManyTimesServer) error {
+	fmt.Printf("GreetManyTimes Invoked\n")
+	firstName := req.GetGreeting().GetFirstName()
+	for i := 1; i<=10; i++ {
+		result := "Hello " + firstName + " Number " + strconv.Itoa(i)
+		res := &greetpb.GreetManyTimesResponse{
+			Result: result,
+		}
+		err := stream.Send(res)
+		if err != nil {
+			return err
+		}
+		time.Sleep(1000 * time.Millisecond)
+	}
+	return nil
 }
 func main() {
 
