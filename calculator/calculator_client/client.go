@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/Ad3bay0c/gRPC/calculator/calculatorpb"
 	"google.golang.org/grpc"
 	"io"
@@ -18,8 +19,11 @@ func main() {
 	// unary
 	//doUnary(c)
 
-	//streaming
-	doServerStreaming(c)
+	//server streaming
+	//doServerStreaming(c)
+
+	//client streaming
+	doClientStreaming(c)
 
 }
 
@@ -53,4 +57,35 @@ func doServerStreaming(c calculatorpb.CalculatorServiceClient) {
 		}
 		log.Printf("Factor is: %v", msg.PrimeNumber)
 	}
+}
+
+func doClientStreaming(c calculatorpb.CalculatorServiceClient) {
+	stream, err := c.ComputeAverage(context.Background())
+	if err != nil {
+        log.Fatalf("Error while calling ComputeAverage: %v", err.Error())
+    }
+	requests := []*calculatorpb.ComputeAverageRequest{
+		&calculatorpb.ComputeAverageRequest{
+            Number: 1,
+        },
+		&calculatorpb.ComputeAverageRequest{
+            Number: 2,
+        },
+		&calculatorpb.ComputeAverageRequest{
+            Number: 3,
+        },
+		&calculatorpb.ComputeAverageRequest{
+            Number: 4,
+        },
+	}
+
+	for _, req := range requests {
+		fmt.Printf("Sending Request %v\n", req)
+		stream.Send(req)
+	}
+	res, err := stream.CloseAndRecv()
+	if err != nil {
+		log.Fatalf("Error while receiving response: %v", err.Error())
+	}
+	fmt.Printf("The total Average is: %v\n", res.Result)
 }
