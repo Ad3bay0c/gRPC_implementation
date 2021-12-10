@@ -9,11 +9,32 @@ import (
 )
 type server struct{}
 
-func (s *server) Sum(ctx context.Context, req *calculatorpb.SumRequest) (*calculatorpb.SumResponse, error) {
+func (*server) Sum(ctx context.Context, req *calculatorpb.SumRequest) (*calculatorpb.SumResponse, error) {
 	return &calculatorpb.SumResponse{
 		SumResult: req.GetFirstNumber() + req.GetSecondNumber(),
 	}, nil
 }
+
+func (*server) PrimeNumber(req *calculatorpb.PrimeNumberDecompositionRequest, stream calculatorpb.CalculatorService_PrimeNumberServer) error {
+	n := req.Number
+	var k int32 = 2
+	for n > 1 {
+		if n % k == 0 {
+			result := &calculatorpb.PrimeNumberDecompositionResponse{
+				PrimeNumber: k,
+			}
+			err := stream.Send(result)
+			n = n / k
+			if err != nil {
+                return err
+            }
+		} else {
+			k = k +	1
+		}
+	}
+	return nil
+}
+
 func main() {
 	listen, err := net.Listen("tcp", "0.0.0.0:50051")
 	if err != nil {
