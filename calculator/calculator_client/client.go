@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc"
 	"io"
 	"log"
+	"time"
 )
 
 func main() {
@@ -23,7 +24,10 @@ func main() {
 	//doServerStreaming(c)
 
 	//client streaming
-	doClientStreaming(c)
+	//doClientStreaming(c)
+
+	//BiDi streaming
+	doBiDiStreaming(c)
 
 }
 
@@ -88,4 +92,46 @@ func doClientStreaming(c calculatorpb.CalculatorServiceClient) {
 		log.Fatalf("Error while receiving response: %v", err.Error())
 	}
 	fmt.Printf("The total Average is: %v\n", res.Result)
+}
+
+func doBiDiStreaming(c calculatorpb.CalculatorServiceClient) {
+	stream, err := c.FindMaximum(context.Background())
+	if err != nil {
+		log.Fatalf("Error while calling FindMaximum: %v", err.Error())
+	}
+
+	numbers := []int32{1,5,3,6,2,20}
+	wait := make(chan struct{})
+	// send a bunch of messages to the server
+	go func() {
+		for _, n := range numbers {
+			fmt.Printf("Sending number: %v\n", n)
+			err := stream.Send(&calculatorpb.FindMaximumRequest{
+				Number: n,
+			})
+			if err != nil {
+				log.Fatalf("Error while sending message: %v", err)
+			}
+			time.Sleep(100 * time.Millisecond)
+		}
+		stream.CloseSend()
+	}()
+
+	// receive a bunch of messages from the server
+	go func() {
+		for {
+			res, err := stream.Recv()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				log.Printf("Error while receiving: %v", err)
+				break
+			}
+			log.Printf("Received: %v", res.GetMaximum())
+		}
+		close(wait)
+	}()
+
+	<- wait
 }
