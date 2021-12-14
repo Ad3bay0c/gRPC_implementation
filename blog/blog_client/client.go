@@ -39,6 +39,29 @@ func ReadBlog(c blogpb.BlogServiceClient) {
 	}
 	log.Printf("Blog was read: %v", res)
 }
+
+func UpdateBlog(c blogpb.BlogServiceClient) {
+	req := &blogpb.UpdateBlogRequest{
+		BlogId: "61b8cc381dd789abc7ca95c4",
+		Blog: &blogpb.Blog{},
+	}
+	_, err := c.UpdateBlog(context.Background(), req)
+	if err != nil {
+		log.Printf("Error while updating blog: %v\n", err)
+	}
+	req = &blogpb.UpdateBlogRequest{
+		BlogId: "61b8cc381dd789abc7ca95c3",
+		Blog: &blogpb.Blog{
+			AuthorId: "Changed Author 2",
+		},
+	}
+	res, err := c.UpdateBlog(context.Background(), req)
+	if err != nil {
+		log.Printf("Error while updating blog: %v\n", err)
+		return
+	}
+	log.Printf("Blog was updated: %v", res)
+}
 func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags | log.Llongfile)
 
@@ -54,4 +77,7 @@ func main() {
 
 	// Read Blog
 	ReadBlog(c)
+
+	//Update Blog
+	UpdateBlog(c)
 }
