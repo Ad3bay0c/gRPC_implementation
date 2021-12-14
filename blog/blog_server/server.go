@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/Ad3bay0c/gRPC/blog/blogpb"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -22,7 +23,7 @@ var collection *mongo.Collection
 type server struct{}
 
 type BlogItem struct {
-	ID       primitive.ObjectID `json:"id" bson:"_id"`
+	ID       primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 	AuthorID string             `json:"author_id" bson:"author_id"`
 	Content  string             `json:"content" bson:"content"`
 	Title    string             `json:"title" bson:"title"`
@@ -55,11 +56,33 @@ func (*server) CreateBlog(ctx context.Context, req *blogpb.CreateBlogRequest) (*
 	}, nil
 }
 
+func (*server) ReadBlog(ctx context.Context, req *blogpb.ReadBlogRequest) (*blogpb.ReadBlogResponse, error) {
+	blogID := req.GetBlogId()
+
+	oID, err := primitive.ObjectIDFromHex(blogID)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "Cannot convert to ObjectID: %v", err.Error())
+	}
+	blog := &BlogItem{}
+	err = collection.FindOne(context.Background(), bson.M{"_id": oID}).Decode(blog)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "An internal Server Error: %v", err.Error())
+	}
+	return &blogpb.ReadBlogResponse{
+		Blog: &blogpb.Blog{
+			Id:       blog.ID.Hex(),
+			AuthorId: blog.AuthorID,
+			Title:    blog.Title,
+			Content:  blog.Content,
+		},
+	}, nil
+}
+
 func main() {
 	log.Println("Blog Server started")
 
 	// if we crash the code, we get the file name and line number
-	log.SetFlags(log.Lshortfile | log.LstdFlags)
+	log.SetFlags(log.Lshortfile | log.LstdFlags | log.Llongfile)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
