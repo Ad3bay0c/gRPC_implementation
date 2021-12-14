@@ -12,6 +12,7 @@ import (
 	"math"
 	"net"
 )
+
 type server struct{}
 
 func (*server) Sum(ctx context.Context, req *calculatorpb.SumRequest) (*calculatorpb.SumResponse, error) {
@@ -24,17 +25,17 @@ func (*server) PrimeNumber(req *calculatorpb.PrimeNumberDecompositionRequest, st
 	n := req.Number
 	var k int32 = 2
 	for n > 1 {
-		if n % k == 0 {
+		if n%k == 0 {
 			result := &calculatorpb.PrimeNumberDecompositionResponse{
 				PrimeNumber: k,
 			}
 			err := stream.Send(result)
 			n = n / k
 			if err != nil {
-                return err
-            }
+				return err
+			}
 		} else {
-			k = k +	1
+			k = k + 1
 		}
 	}
 	return nil
