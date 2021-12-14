@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Ad3bay0c/gRPC/blog/blogpb"
 	"google.golang.org/grpc"
+	"io"
 	"log"
 )
 func createBlog (c blogpb.BlogServiceClient) {
@@ -72,6 +73,25 @@ func DeleteBlog(c blogpb.BlogServiceClient) {
     }
     log.Printf("Blog was deleted: %v", deleteRes)
 }
+
+func ListBlog(c blogpb.BlogServiceClient) {
+	stream, err := c.ListBlog(context.Background(), &blogpb.ListBlogRequest{})
+	if err != nil {
+        log.Printf("Error while calling ListBlog RPC: %v\n", err)
+        return
+    }
+	for {
+		res, err := stream.Recv()
+        if err == io.EOF {
+            break
+        }
+        if err != nil {
+            log.Printf("Error while reading stream: %v\n", err)
+            return
+        }
+        log.Printf("Blog was read: %v\n", res)
+	}
+}
 func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags | log.Llongfile)
 
@@ -92,5 +112,8 @@ func main() {
 	UpdateBlog(c)
 
 	//Delete Blog
-	DeleteBlog(c)
+	//DeleteBlog(c)
+
+	// List Blogs
+	ListBlog(c)
 }
