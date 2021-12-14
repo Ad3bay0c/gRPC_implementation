@@ -102,6 +102,23 @@ func (*server) UpdateBlog(ctx context.Context, req *blogpb.UpdateBlogRequest) (*
 	}, nil
 }
 
+func (*server) DeleteBlog(ctx context.Context, req *blogpb.DeleteBlogRequest) (*blogpb.DeleteBlogResponse, error) {
+	blogID := req.GetBlogId()
+	oID, err := primitive.ObjectIDFromHex(blogID)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "Cannot convert to ObjectID: %v", err.Error())
+	}
+	res, err := collection.DeleteOne(context.Background(), bson.M{"_id": oID})
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "ID cannot be found: %v", err.Error())
+	}
+	if res.DeletedCount == 0 {
+		return nil, status.Errorf(codes.NotFound, "ID cannot be found: %v", err.Error())
+	}
+	return &blogpb.DeleteBlogResponse{
+        BlogId: blogID,
+    }, nil
+}
 func dataToBlogPb(data *BlogItem) *blogpb.Blog {
 	return &blogpb.Blog{
 		Id:       data.ID.Hex(),
