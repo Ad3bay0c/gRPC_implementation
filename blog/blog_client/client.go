@@ -62,6 +62,16 @@ func UpdateBlog(c blogpb.BlogServiceClient) {
 	}
 	log.Printf("Blog was updated: %v", res)
 }
+func DeleteBlog(c blogpb.BlogServiceClient) {
+    deleteRes, err := c.DeleteBlog(context.Background(), &blogpb.DeleteBlogRequest{
+        BlogId: "61b8cc381dd789abc7ca95c3",
+    })
+    if err != nil {
+        log.Printf("Error while deleting blog: %v\n", err)
+		return
+    }
+    log.Printf("Blog was deleted: %v", deleteRes)
+}
 func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags | log.Llongfile)
 
@@ -73,11 +83,14 @@ func main() {
 	c := blogpb.NewBlogServiceClient(conn)
 
 	// Create Blog
-	//createBlog(c)
+	createBlog(c)
 
 	// Read Blog
 	ReadBlog(c)
 
 	//Update Blog
 	UpdateBlog(c)
+
+	//Delete Blog
+	DeleteBlog(c)
 }
