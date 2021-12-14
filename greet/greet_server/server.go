@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-type server struct {}
+type server struct{}
 
 func (s *server) Greet(ctx context.Context, req *greetpb.GreetRequest) (*greetpb.GreetResponse, error) {
 	fmt.Printf("Greet function was invoked with %v\n", req)
@@ -31,7 +31,7 @@ func (s *server) Greet(ctx context.Context, req *greetpb.GreetRequest) (*greetpb
 func (s *server) GreetManyTimes(req *greetpb.GreetManyTimesRequest, stream greetpb.GreetService_GreetManyTimesServer) error {
 	fmt.Printf("GreetManyTimes Invoked\n")
 	firstName := req.GetGreeting().GetFirstName()
-	for i := 1; i<=10; i++ {
+	for i := 1; i <= 10; i++ {
 		result := "Hello " + firstName + " Number " + strconv.Itoa(i)
 		res := &greetpb.GreetManyTimesResponse{
 			Result: result,
@@ -88,9 +88,9 @@ func (*server) GreetEveryone(stream greetpb.GreetService_GreetEveryoneServer) er
 			return nil
 		}
 		if err != nil {
-            log.Fatalf("Error while reading client stream: %v", err)
-            return err
-        }
+			log.Fatalf("Error while reading client stream: %v", err)
+			return err
+		}
 		result := "Hello " + req.GetGreeting().GetFirstName() + "! "
 		err = stream.Send(&greetpb.GreetEveryoneResponse{
 			Result: result,
@@ -114,7 +114,7 @@ func main() {
 		log.Fatalf("Failed to listen: %v", err.Error())
 	}
 
-	opts  := []grpc.ServerOption{}
+	opts := []grpc.ServerOption{}
 	tls := false
 
 	if tls {

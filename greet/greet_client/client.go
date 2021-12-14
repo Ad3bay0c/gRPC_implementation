@@ -47,7 +47,7 @@ func main() {
 	//doBiDirectionalStreaming(c)
 
 	// Unary With Deadline RPC Implementation
-	doUnaryWithDeadline(c, 5 * time.Second) // should complete
+	doUnaryWithDeadline(c, 5*time.Second) // should complete
 	//doUnaryWithDeadline(c, 1 * time.Second) // should timeout
 }
 
@@ -55,7 +55,7 @@ func doUnary(c greetpb.GreetServiceClient) {
 	req := &greetpb.GreetRequest{
 		Greeting: &greetpb.Greeting{
 			FirstName: "John",
-			LastName: "Doe",
+			LastName:  "Doe",
 		},
 	}
 	res, err := c.Greet(context.Background(), req)
@@ -69,7 +69,7 @@ func doUnaryWithDeadline(c greetpb.GreetServiceClient, timeout time.Duration) {
 	req := &greetpb.GreetWithDeadlineRequest{
 		Greeting: &greetpb.Greeting{
 			FirstName: "John",
-			LastName: "Doe",
+			LastName:  "Doe",
 		},
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
@@ -83,7 +83,7 @@ func doUnaryWithDeadline(c greetpb.GreetServiceClient, timeout time.Duration) {
 			} else {
 				fmt.Printf("Unexpected Error: %v", statusErr)
 			}
-		}else {
+		} else {
 			log.Fatalf("Error while calling GreetWithDeadline RPC: %v", err)
 		}
 		return
@@ -95,7 +95,7 @@ func doServerStreaming(c greetpb.GreetServiceClient) {
 	req := &greetpb.GreetManyTimesRequest{
 		Greeting: &greetpb.Greeting{
 			FirstName: "John",
-			LastName: "Doe",
+			LastName:  "Doe",
 		},
 	}
 	res, err := c.GreetManyTimes(context.Background(), req)
@@ -120,55 +120,55 @@ func doClientStreaming(c greetpb.GreetServiceClient) {
 		log.Fatalf("Error while calling LongGreet: %v", err.Error())
 	}
 	requests := []*greetpb.LongGreetRequest{
-        &greetpb.LongGreetRequest{
-            Greeting: &greetpb.Greeting{
-                FirstName: "John",
-                LastName: "Doe",
-            },
-        },
-        &greetpb.LongGreetRequest{
-            Greeting: &greetpb.Greeting{
-                FirstName: "Jane",
-                LastName: "Doe",
-            },
-        },
-        &greetpb.LongGreetRequest{
-            Greeting: &greetpb.Greeting{
-                FirstName: "Jack",
-                LastName: "Doe",
-            },
-        },
-        &greetpb.LongGreetRequest{
-            Greeting: &greetpb.Greeting{
-                FirstName: "Jill",
-                LastName: "Doe",
-            },
-        },
-        &greetpb.LongGreetRequest{
-            Greeting: &greetpb.Greeting{
-                FirstName: "John",
-                LastName: "Smith",
-            },
-        },
-        &greetpb.LongGreetRequest{
-            Greeting: &greetpb.Greeting{
-                FirstName: "Jane",
-                LastName: "Smith",
-            },
-        },
-        &greetpb.LongGreetRequest{
-            Greeting: &greetpb.Greeting{
-                FirstName: "Jack",
-                LastName: "Smith",
-            },
-        },
-        &greetpb.LongGreetRequest{
-            Greeting: &greetpb.Greeting{
-                FirstName: "Jill",
-                LastName: "Smith",
-            },
-        },
-    }
+		&greetpb.LongGreetRequest{
+			Greeting: &greetpb.Greeting{
+				FirstName: "John",
+				LastName:  "Doe",
+			},
+		},
+		&greetpb.LongGreetRequest{
+			Greeting: &greetpb.Greeting{
+				FirstName: "Jane",
+				LastName:  "Doe",
+			},
+		},
+		&greetpb.LongGreetRequest{
+			Greeting: &greetpb.Greeting{
+				FirstName: "Jack",
+				LastName:  "Doe",
+			},
+		},
+		&greetpb.LongGreetRequest{
+			Greeting: &greetpb.Greeting{
+				FirstName: "Jill",
+				LastName:  "Doe",
+			},
+		},
+		&greetpb.LongGreetRequest{
+			Greeting: &greetpb.Greeting{
+				FirstName: "John",
+				LastName:  "Smith",
+			},
+		},
+		&greetpb.LongGreetRequest{
+			Greeting: &greetpb.Greeting{
+				FirstName: "Jane",
+				LastName:  "Smith",
+			},
+		},
+		&greetpb.LongGreetRequest{
+			Greeting: &greetpb.Greeting{
+				FirstName: "Jack",
+				LastName:  "Smith",
+			},
+		},
+		&greetpb.LongGreetRequest{
+			Greeting: &greetpb.Greeting{
+				FirstName: "Jill",
+				LastName:  "Smith",
+			},
+		},
+	}
 
 	// We iterate over our slice and send each message individually
 	for _, req := range requests {
@@ -179,8 +179,8 @@ func doClientStreaming(c greetpb.GreetServiceClient) {
 
 	res, err := stream.CloseAndRecv()
 	if err != nil {
-        log.Fatalf("Error while receiving response from LongGreet: %v", err.Error())
-    }
+		log.Fatalf("Error while receiving response from LongGreet: %v", err.Error())
+	}
 	fmt.Printf("LongGreet Response: %v\n", res)
 }
 
@@ -191,31 +191,31 @@ func doBiDirectionalStreaming(c greetpb.GreetServiceClient) {
 				FirstName: "John",
 				LastName:  "Doe",
 			},
-				},
+		},
 		{
 			Greeting: &greetpb.Greeting{
 				FirstName: "Jane",
 				LastName:  "Doe",
 			},
-				},
+		},
 		{
 			Greeting: &greetpb.Greeting{
 				FirstName: "Jack",
 				LastName:  "Doe",
 			},
-				},
+		},
 		{
 			Greeting: &greetpb.Greeting{
 				FirstName: "Jill",
 				LastName:  "Doe",
 			},
-				},
+		},
 		{
 			Greeting: &greetpb.Greeting{
 				FirstName: "John",
 				LastName:  "Smith",
 			},
-				},
+		},
 	}
 	// We create a stream by invoking the client
 	stream, err := c.GreetEveryone(context.Background())
@@ -227,9 +227,9 @@ func doBiDirectionalStreaming(c greetpb.GreetServiceClient) {
 	go func() {
 		for _, req := range requests {
 			fmt.Printf("Sending message: %v\n", req)
-            stream.Send(req)
-            time.Sleep(1000 * time.Millisecond)
-        }
+			stream.Send(req)
+			time.Sleep(1000 * time.Millisecond)
+		}
 		stream.CloseSend()
 	}()
 	// We receive a bunch of messages from the client (goroutine)
