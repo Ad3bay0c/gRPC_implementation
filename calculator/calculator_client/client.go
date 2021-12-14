@@ -36,14 +36,14 @@ func main() {
 
 func doUnary(c calculatorpb.CalculatorServiceClient) {
 	req := &calculatorpb.SumRequest{
-        FirstNumber:  5,
-        SecondNumber: 10,
-    }
-    res, err := c.Sum(context.Background(), req)
-    if err != nil {
-        log.Fatalf("Error while calling Sum RPC: %v", err.Error())
-    }
-    log.Printf("Response from Sum: %v", res.SumResult)
+		FirstNumber:  5,
+		SecondNumber: 10,
+	}
+	res, err := c.Sum(context.Background(), req)
+	if err != nil {
+		log.Fatalf("Error while calling Sum RPC: %v", err.Error())
+	}
+	log.Printf("Response from Sum: %v", res.SumResult)
 }
 
 func doServerStreaming(c calculatorpb.CalculatorServiceClient) {
@@ -69,21 +69,21 @@ func doServerStreaming(c calculatorpb.CalculatorServiceClient) {
 func doClientStreaming(c calculatorpb.CalculatorServiceClient) {
 	stream, err := c.ComputeAverage(context.Background())
 	if err != nil {
-        log.Fatalf("Error while calling ComputeAverage: %v", err.Error())
-    }
+		log.Fatalf("Error while calling ComputeAverage: %v", err.Error())
+	}
 	requests := []*calculatorpb.ComputeAverageRequest{
 		&calculatorpb.ComputeAverageRequest{
-            Number: 1,
-        },
+			Number: 1,
+		},
 		&calculatorpb.ComputeAverageRequest{
-            Number: 2,
-        },
+			Number: 2,
+		},
 		&calculatorpb.ComputeAverageRequest{
-            Number: 3,
-        },
+			Number: 3,
+		},
 		&calculatorpb.ComputeAverageRequest{
-            Number: 4,
-        },
+			Number: 4,
+		},
 	}
 
 	for _, req := range requests {
@@ -103,7 +103,7 @@ func doBiDiStreaming(c calculatorpb.CalculatorServiceClient) {
 		log.Fatalf("Error while calling FindMaximum: %v", err.Error())
 	}
 
-	numbers := []int32{1,5,3,6,2,20}
+	numbers := []int32{1, 5, 3, 6, 2, 20}
 	wait := make(chan struct{})
 	// send a bunch of messages to the server
 	go func() {
@@ -136,7 +136,7 @@ func doBiDiStreaming(c calculatorpb.CalculatorServiceClient) {
 		close(wait)
 	}()
 
-	<- wait
+	<-wait
 }
 
 func doErrorUnary(c calculatorpb.CalculatorServiceClient) {
@@ -160,7 +160,7 @@ func doErrorCall(c calculatorpb.CalculatorServiceClient, n int32) {
 				fmt.Println("We probably sent a negative number!")
 				return
 			}
-		}else {
+		} else {
 			log.Fatalf("Error while calling SquareRoot: %v", err)
 			return
 		}
