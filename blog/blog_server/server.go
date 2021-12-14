@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 	"log"
 	"net"
@@ -101,7 +102,33 @@ func (*server) UpdateBlog(ctx context.Context, req *blogpb.UpdateBlogRequest) (*
 		Blog: dataToBlogPb(blogItem),
 	}, nil
 }
-
+func (*server) ListBlog(req *blogpb.ListBlogRequest, stream blogpb.BlogService_ListBlogServer) error {
+	cur, err := collection.Find(context.Background(), bson.M{})
+	if err != nil {
+		return status.Errorf(codes.Internal, "An internal Server Error: %v", err.Error())
+	}
+	defer cur.Close(context.Background())
+	for cur.Next(context.Background()) {
+		data := &BlogItem{}
+		err := cur.Decode(data)
+		if err != nil {
+			return status.Errorf(codes.Internal, "An internal Server Error: %v", err.Error())
+		}
+		stream.Send(&blogpb.ListBlogResponse{
+			Blog: &blogpb.Blog{
+				Id: data.ID.Hex(),
+                AuthorId: data.AuthorID,
+                Title: data.Title,
+                Content: data.Content,
+            },
+		},
+		)
+		if err := cur.Err(); err != nil {
+			return status.Errorf(codes.Internal, "An internal Server Error: %v", err.Error())
+		}
+	}
+	return nil
+}
 func (*server) DeleteBlog(ctx context.Context, req *blogpb.DeleteBlogRequest) (*blogpb.DeleteBlogResponse, error) {
 	blogID := req.GetBlogId()
 	oID, err := primitive.ObjectIDFromHex(blogID)
@@ -155,6 +182,7 @@ func main() {
 	s := grpc.NewServer(opts...)
 	blogpb.RegisterBlogServiceServer(s, &server{})
 
+	reflection.Register(s)
 	go func() {
 		if serverErr := s.Serve(listen); serverErr != nil {
 			log.Fatalf("Error Connecting to port: %v", serverErr.Error())
