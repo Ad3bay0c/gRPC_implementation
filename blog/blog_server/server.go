@@ -24,9 +24,9 @@ type server struct{}
 
 type BlogItem struct {
 	ID       primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	AuthorID string             `json:"author_id" bson:"author_id"`
-	Content  string             `json:"content" bson:"content"`
-	Title    string             `json:"title" bson:"title"`
+	AuthorID string             `json:"author_id" bson:"author_id,omitempty"`
+	Content  string             `json:"content" bson:"content,omitempty"`
+	Title    string             `json:"title" bson:"title,omitempty"`
 }
 
 func (*server) CreateBlog(ctx context.Context, req *blogpb.CreateBlogRequest) (*blogpb.CreateBlogResponse, error) {
@@ -69,15 +69,47 @@ func (*server) ReadBlog(ctx context.Context, req *blogpb.ReadBlogRequest) (*blog
 		return nil, status.Errorf(codes.NotFound, "An internal Server Error: %v", err.Error())
 	}
 	return &blogpb.ReadBlogResponse{
-		Blog: &blogpb.Blog{
-			Id:       blog.ID.Hex(),
-			AuthorId: blog.AuthorID,
-			Title:    blog.Title,
-			Content:  blog.Content,
-		},
+		Blog: dataToBlogPb(blog),
 	}, nil
 }
 
+func (*server) UpdateBlog(ctx context.Context, req *blogpb.UpdateBlogRequest) (*blogpb.UpdateBlogResponse, error) {
+	blogID := req.GetBlogId()
+	blog := req.GetBlog()
+	data := &BlogItem{}
+	oID, err := primitive.ObjectIDFromHex(blogID)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "Cannot convert to ObjectID: %v", err.Error())
+	}
+	err = collection.FindOne(context.Background(), bson.M{"_id": oID}).Decode(data)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "ID cannot be found: %v", err.Error())
+	}
+	blogItem := &BlogItem{
+		AuthorID: blog.AuthorId,
+		Content: blog.Content,
+		Title: blog.Title,
+	}
+
+	//_, err = collection.ReplaceOne(context.Background(), bson.M{"_id": oID}, blogItem)
+	err = collection.FindOneAndUpdate(context.Background(), bson.M{"_id": oID}, bson.D{{"$set", *blogItem}}).Decode(data)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "An internal Server Error: %v", err.Error())
+	}
+	blogItem.ID = oID
+	return &blogpb.UpdateBlogResponse{
+		Blog: dataToBlogPb(blogItem),
+	}, nil
+}
+
+func dataToBlogPb(data *BlogItem) *blogpb.Blog {
+	return &blogpb.Blog{
+		Id:       data.ID.Hex(),
+		AuthorId: data.AuthorID,
+		Title:    data.Title,
+		Content:  data.Content,
+	}
+}
 func main() {
 	log.Println("Blog Server started")
 
