@@ -1,3 +1,6 @@
 .idea
 greet/greetpb/greet.pb.go
 calculator/calculatorpb/calculator.pb.go
+ssl/*.crt
+ssl/*.key
+ssl/*.perm
