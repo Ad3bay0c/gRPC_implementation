@@ -230,7 +230,7 @@ func doBiDirectionalStreaming(c greetpb.GreetServiceClient) {
 			stream.Send(req)
 			time.Sleep(1000 * time.Millisecond)
 		}
-		stream.CloseSend()
+		_ = stream.CloseSend()
 	}()
 	// We receive a bunch of messages from the client (goroutine)
 	go func() {
